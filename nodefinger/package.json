@@ -1,0 +1,8 @@
+{
+  "name": "nodefinger-beta",
+  "version": "0.1.0",
+  "dependencies": {
+    "mysql": "^2.5.4",
+    "net": "^1.0.2"
+  }
+}
