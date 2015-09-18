@@ -10,9 +10,9 @@ int getFingerprintIDez();
 // pin #11 is IN from sensor (GREEN wire)
 // pin #12 is OUT from arduino  (WHITE wire)
 #if ARDUINO >= 100
-SoftwareSerial mySerial(12, 11);//primeiro fiobranco depois verde
+SoftwareSerial mySerial(11, 12);//primeiro fiobranco depois verde
 #else
-NewSoftSerial mySerial(12, 11);
+NewSoftSerial mySerial(11, 12);
 #endif
 
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);//Declaracao do objeto para comunicacao.
@@ -28,7 +28,7 @@ uint8_t getFingerprintEnroll(uint8_t id);
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,202); // IP Adress to our Server
+IPAddress serverIP(192,168,14,245); // IP Adress to our Server
 const int serverPort=7000;
 
 // Initialize the Ethernet client library
@@ -51,8 +51,8 @@ char teclas[rows][cols] = {
   {'7','8','9'},
   {'*','0','#'}
 };
-byte linha_pino[] = {22, 24, 26, 28}; //Pinos do arduino que estao conectados as linhas do teclado
-byte coluna_pino[] = {30, 32, 34};//Pinos do arduino que estao conectados as colunas do teclado
+byte linha_pino[] = {44, 42, 40, 38}; //Pinos do arduino que estao conectados as linhas do teclado
+byte coluna_pino[] = {36, 34, 32};//Pinos do arduino que estao conectados as colunas do teclado
 //Cria o objeto, teclado
 Keypad teclado = Keypad( makeKeymap(teclas), linha_pino, coluna_pino, rows, cols);
 

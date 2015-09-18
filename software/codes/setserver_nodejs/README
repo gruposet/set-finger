@@ -1,0 +1,10 @@
+Para executar esta aplicação (servidor node para a comunicação com o hardware setfinger), é necessário instalar o pacote nodejs e npm.
+
+Instalar:
+sudo apt-get install nodejs
+sudo apt-get install npm
+
+Executar aplicação
+No diretório setserver_nodejs execute:
+npm install
+nodejs setserver
