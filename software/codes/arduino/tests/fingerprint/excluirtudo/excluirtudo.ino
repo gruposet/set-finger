@@ -12,10 +12,10 @@ uint8_t getFingerprintEnroll(uint8_t id);
 // pin #12 is IN from sensor (GREEN wire)
 // pin #11 is OUT from arduino  (WHITE wire)
 #if ARDUINO >= 100
-SoftwareSerial mySerial(12, 11); //(Tx, Rx)
+SoftwareSerial mySerial(11, 12); 
 //#define mySerial Serial1
 #else
-NewSoftSerial mySerial(12, 11);
+NewSoftSerial mySerial(11, 12);
 #endif
 
   Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
