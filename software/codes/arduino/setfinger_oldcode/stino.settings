@@ -1,0 +1,11 @@
+{
+    "arduino_folder": "/usr/share/arduino", 
+    "board": 5, 
+    "full_compilation": true, 
+    "platform": 1, 
+    "platform_name": "Arduino AVR Boards", 
+    "serial_port": 0, 
+    "show_compilation_output": false, 
+    "show_upload_output": true, 
+    "verify_code": true
+}

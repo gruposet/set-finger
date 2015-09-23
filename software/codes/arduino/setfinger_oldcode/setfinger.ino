@@ -28,7 +28,7 @@ uint8_t getFingerprintEnroll(uint8_t id);
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,245); // IP Adress to our Server
+IPAddress serverIP(192,168,14,141); // IP Adress to our Server
 const int serverPort=7000;
 
 // Initialize the Ethernet client library
