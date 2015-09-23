@@ -54,39 +54,38 @@ void loop()
 void redColorAlert(){ //significa usuário não autorizado ou acesso negado
   short int i=0;
   for (i=0;i<5;i++){
-    digitalWrite(blue,LOW);
-    digitalWrite(green,LOW);
-    digitalWrite(red,HIGH);
-    tone(buzzer, 1400, 1000);
-    delay(1000);
-    digitalWrite(red,LOW);
-    delay(100);
+      digitalWrite(blue,LOW);
+      digitalWrite(green,LOW);
+      digitalWrite(red,HIGH);
+      tone(buzzer, 1400, 1000);
+      delay(1000);
+      digitalWrite(red,LOW);
+      delay(100);
   }
 }
 
 void greenColorAlert(){ //significa usuário autorizado ou tudo ok!
   short int i=0;
   for (i=0;i<5;i++){
-  	digitalWrite(blue,LOW);
-  	digitalWrite(green,HIGH);
-  	digitalWrite(red,LOW);
-  	tone(buzzer, 750, 500);
-  	delay(1000);
-  	digitalWrite(green,LOW);
-  	delay(100);
-  
- }
+  	 digitalWrite(blue,LOW);
+  	 digitalWrite(green,HIGH);
+  	 digitalWrite(red,LOW);
+  	 tone(buzzer, 750, 500);
+  	 delay(1000);
+  	 digitalWrite(green,LOW);
+  	 delay(100);
+  }
 }
 
 void blueColorAlert(){ //significa usuário admin autorizado ou conexão com o servidor.
   short int i=0;
   for (i=0;i<5;i++){
-  	digitalWrite(blue,HIGH);
-  	digitalWrite(green,LOW);
-  	digitalWrite(red,LOW);
-  	tone(buzzer, 500, 300);
-  	delay(100);
-  	digitalWrite(blue,LOW);
-  	delay(1000);
+  	 digitalWrite(blue,HIGH);
+  	 digitalWrite(green,LOW);
+  	 digitalWrite(red,LOW);
+  	 tone(buzzer, 500, 300);
+  	 delay(100);
+  	 digitalWrite(blue,LOW);
+  	 delay(1000);
  }
 }
