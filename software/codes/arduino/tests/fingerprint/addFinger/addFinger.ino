@@ -19,8 +19,6 @@
 //Declaração do objeto para comunicação.
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
-//Declaração da função de adição de digitais
-uint8_t addFinger(uint8_t id);
 
 void setup()  
 {

@@ -1,5 +1,5 @@
 /*Este código contém a função readFinger() responsável por executar a leitura de digitais no sensor fingerprint e identificar se uma digital lida está cadastrada. 
- * A execução desta função ativa a leitura de digital no sensor, permanecendo ativa até que seja detectada a digital do usuário.
+ * A execução desta função ativa a leitura de digital no sensor, permanecendo ativa até que seja detectada a digital do usuário identificação.
  * Para executar a função addFinger() não é necessário repassar nenhum entrada, no entanto, se ocorrer algum erro na identificação da digital, a função retorna -1*/
 
 #include <Adafruit_Fingerprint.h>
