@@ -30,10 +30,12 @@ void setup()
 void loop()                    
 {  
   
-deleteFinger(0);//INFORME O ID DESEJADO A DELETADO
+deleteFinger(0);//INFORME O ID DESEJADO A SER EXCLUÍDO
   
 }
 
+
+//DELETA DIGITAIS ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint8_t deleteFinger(uint8_t id) {
   
   uint8_t digital;

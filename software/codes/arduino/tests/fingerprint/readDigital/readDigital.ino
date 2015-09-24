@@ -4,7 +4,7 @@
 
 #include <Adafruit_Fingerprint.h>
 
-//decisão de biblioteca a ser utilizada de acordo com a versão da IDE
+//Decisão de biblioteca a ser utilizada de acordo com a versão da IDE
 #if ARDUINO >= 100
  #include <SoftwareSerial.h>
  SoftwareSerial mySerial(11, 12);
@@ -21,9 +21,7 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 void setup()  
 {
   Serial.begin(9600);
-  
-  // Define a taxa de dados para a porta serial do sensor
-  finger.begin(57600);
+  finger.begin(57600);// Define a taxa de dados para a porta serial do sensor
 }
 
 
