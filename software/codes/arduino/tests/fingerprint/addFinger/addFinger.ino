@@ -29,24 +29,24 @@ void setup()
 
 void loop()                     
 {
- addFinger(0);//INFORME O ID DESEJADO A SER CADASTRADO
+  int retorno=addFinger(0);//INFORME O ID DESEJADO A SER CADASTRADO
+  Serial.print("retorno: ");
+  Serial.println(retorno);
+  delay(3000);
 }
 
 //ADICIONAR DIGITAIS-------------------------------------------------------------------------------------------------------------------------------------------------------------
-uint8_t addFinger(uint8_t id) {
+int addFinger(uint8_t id) {
   
   //VERIFICA SE HÁ UM SENSOR FINGERPRINT CONECTADO///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  Serial.println("Procurando sensor...");
+  Serial.println("Procurando sensor... ");
   if (finger.verifyPassword()) {
   Serial.println("Sensor FingerPrint Encontrado!");
   
   } 
   //se não houver nenhum sensor conectado imprime uma mensagem de erro e retorna a função setup
   else {
-  Serial.println("Nenhum sensor foi encontrato. Conecte um sensor!");
-  char message[]="erro";
-  return message;
-  
+  return -1;//return "NENHUM SENSOR FOI ENCONTRADO. CONECTE UM SENSOR E TENTE NOVAMENTE!";
   }
   
   
@@ -58,13 +58,13 @@ uint8_t addFinger(uint8_t id) {
   
   //LEITURA DA PRIMEIRA DIGITAL/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   Serial.println("Aguardando uma digital valida. Coloque seu dedo...");
-  delay(1000);  
-  
+    
   
   //"finger.getImage()" faz a leitura do dedo (gera a imagem) e retorna um valor para a variável "digital"
   //obs. é necessário executar esta função antes do laço while para que seja atribuido o valor de resposta a variável "digital" para que o laço funcione corretamente
   //este laço tem como função executar a leitura da digital até que o usuário insira o dedo, ou seja, enquanto não for detectada uma digital no sensor, este permanecerá 
   //em modo de leitura aguardando-a
+  
   digital= finger.getImage(); 
   while(digital != FINGERPRINT_OK)
   {
@@ -73,16 +73,15 @@ uint8_t addFinger(uint8_t id) {
 
   //converte a imagem da primeira digital lida em arquivo caracter
   digital = finger.image2Tz(1);
-  if (digital != FINGERPRINT_OK)  return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da primeira digital não tiver ocorrido com sucesso
+  if (digital != FINGERPRINT_OK)  return -1;//{return "ERRO! NÃO FOI POSSIVEL CONVERTER A IMAGEM";} //retorna -1 e sai da função addFinger() somente se a conversão da imagem da primeira digital não tiver ocorrido com sucesso
 
-  
   Serial.println("Retire o dedo");
-  delay(3000);
+  delay(1000);
 
 
   //LEITURA DA SEGUNDA DIGITAL//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   Serial.println("Aguardando uma digital valida. Coloque seu dedo novamente...");
-  delay(1000);
+  //delay(1000);
     
   digital= finger.getImage();
   while(digital != FINGERPRINT_OK)
@@ -92,24 +91,21 @@ uint8_t addFinger(uint8_t id) {
 
   //converte a imagem da segunda digital lida em arquivo caracter
   digital = finger.image2Tz(2);
-  if (digital != FINGERPRINT_OK)  return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da segunda digital não tiver ocorrido com sucesso
+  if (digital != FINGERPRINT_OK)  return -1;//{return "ERRO! NÃO FOI POSSIVEL CONVERTER A IMAGEM";} //retorna -1 e sai da função addFinger() somente se a conversão da imagem da segunda digital não tiver ocorrido com sucesso
  
   //criação do modelo para a digital lida
   digital = finger.createModel();
-  if (digital != FINGERPRINT_OK){
-    Serial.println("ERRO! DIGITAIS INCOMPATIVEIS");
-    return -1; //retorna -1 e sai da função addFinger() somente se as digitais não forem compativeis e o modelo não tenha sido criado com sucesso
-  }
+  if (digital != FINGERPRINT_OK)  return -1;//{return "ERRO! NÃO FOI POSSIVEL CRIAR O MODELO. DIGITAIS IMCOMPATIVEIS";} //retorna -1 e sai da função addFinger() somente se as digitais não forem compativeis e o modelo não tenha sido criado com sucesso
+   
   
-  
-  Serial.println("MODELO CRIADO COM SUCESSO. DIGITAIS COMPATIVEIS");
-  delay(1000); 
+  //Serial.println("Modelo criado com sucesso. Digitais compativeis");
+  //delay(1000); 
 
   //gravação do modelo da digital
   digital = finger.storeModel(id);
-  if (digital != FINGERPRINT_OK)  return -1; //retorna -1 e sai da função addFinger() somente se a gravação do modelo não tiver ocorrido com sucesso
-  Serial.println("DIGITAL ADICIONADA COM SUCESSO");
-  delay(1000);
- 
+  if (digital != FINGERPRINT_OK)  return -1;//{return "ERRO! NÃO FOI POSSIVEL GRAVAR O MODELO";} //retorna -1 e sai da função addFinger() somente se a gravação do modelo não tiver ocorrido com sucesso
+
+  return id;
+   
   
 }
