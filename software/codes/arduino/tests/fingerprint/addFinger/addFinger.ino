@@ -39,13 +39,14 @@ uint8_t addFinger(uint8_t id) {
   Serial.println("Procurando sensor...");
   if (finger.verifyPassword()) {
   Serial.println("Sensor FingerPrint Encontrado!");
-  delay(1000);
+  
   } 
   //se não houver nenhum sensor conectado imprime uma mensagem de erro e retorna a função setup
   else {
   Serial.println("Nenhum sensor foi encontrato. Conecte um sensor!");
-  delay(1000);
-  addFinger(0);
+  char message[]="erro";
+  return message;
+  
   }
   
   
