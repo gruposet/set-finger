@@ -1,12 +1,12 @@
 /*Este código contém a função addFinger(id), responsável pela adição de digitais no sensor fingerprint. 
- * A execução desta função ativa a leitura de digital no sensor, permanecendo ativa até que seja detectada a digital do usuário para cadastro. 
+ * A execução desta função ativa a leitura da digital no sensor, permanecendo ativa até que seja detectada a digital do usuário para cadastro. 
  * Este processo se repete duas vezes para que a digital seja lida e comparada. Portanto, é necessário que o usuário insira o mesmo dedo duas vezes.
  * Para executar esta função é necessário informar o ID a ser cadastrado no sensor. A função retorna -1 apenas se ocorrer erro em algumas das etapas de gravação da digital.
  */
  
 #include <Adafruit_Fingerprint.h>
 
-//decisão de biblioteca a ser utilizada de acordo com a versão da IDE
+//decisão da biblioteca a ser utilizada de acordo com a versão da IDE
 #if ARDUINO >= 100
  #include <SoftwareSerial.h>
  SoftwareSerial mySerial(11, 12);

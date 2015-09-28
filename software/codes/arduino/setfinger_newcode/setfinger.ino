@@ -7,6 +7,18 @@ IPAddress serverIP(192,168,14,141); // IP Adress to our Server
 const int serverPort=7000;
 // Inicializa biblioteca ethernet cliente
 EthernetClient client;
+/*-------------Definindo biblioteca fingerprint----------------*/
+#include <Adafruit_Fingerprint.h>
+//decisão de biblioteca a ser utilizada de acordo com a versão da IDE
+#if ARDUINO >= 100
+ #include <SoftwareSerial.h>
+ SoftwareSerial mySerial(11, 12);
+#else
+ #include <NewSoftSerial.h>
+ NewSoftSerial mySerial(11, 12);
+#endif
+//Declaração do objeto para comunicação.
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 /*-------------Definindo biblioteca LCD e seus pinos-----------*/
 #include <LiquidCrystal.h> // declara a utilização da biblioteca LiquidCrystal
 #define luz_fundo  7
@@ -35,6 +47,9 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>SETUP<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 void setup()
 {
+Serial.begin(9600); 
+finger.begin(57600);// Define a taxa de dados para a porta serial do sensor
+
 lcd.begin(16, 2); //objeto "lcd" de 2 linhas e 16 colunas
 pinMode(luz_fundo,OUTPUT); //define o pino como saída
 digitalWrite(luz_fundo,HIGH); // Liga a luz do display.
