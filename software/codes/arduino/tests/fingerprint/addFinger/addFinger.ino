@@ -46,6 +46,7 @@ int addFinger(uint8_t id) {
   } 
   //se não houver nenhum sensor conectado imprime uma mensagem de erro e retorna a função setup
   else {
+  Serial.println("Nenhum sensor foi encontrato. Conecte um sensor!");
   return -1;//return "NENHUM SENSOR FOI ENCONTRADO. CONECTE UM SENSOR E TENTE NOVAMENTE!";
   }
   
@@ -104,7 +105,9 @@ int addFinger(uint8_t id) {
   //gravação do modelo da digital
   digital = finger.storeModel(id);
   if (digital != FINGERPRINT_OK)  return -1;//{return "ERRO! NÃO FOI POSSIVEL GRAVAR O MODELO";} //retorna -1 e sai da função addFinger() somente se a gravação do modelo não tiver ocorrido com sucesso
-
+  Serial.println("Digital adicionada com sucesso");
+  Serial.print("ID: ");
+  Serial.println(id);
   return id;
    
   

@@ -29,10 +29,10 @@ void setup()
 void loop()                    
 {  
   
-  //Esta função realiza a leitura da digital, retorna -1 se a digital não for reconhecida ou retorna o ID desta digital caso seja reconhecida.
-  //Obs. a leitura da digital é executada muito rapidamente. Isso é possivel ser observado na oscilação do sinal indicador luminoso vermelho no sensor, portanto, 
-  //levar em consideração o tempo de leitura de acordo com a aolicação.
-  readFinger(); 
+  int retorno=readFinger();
+  Serial.print("retorno: ");
+  Serial.println(retorno);
+  delay(3000);
   
 }
 
@@ -49,7 +49,7 @@ int readFinger() {
   //se não houver nenhum sensor conectado imprime uma mensagem de erro e retorna a função setup
   else {
   Serial.println("Nenhum sensor foi encontrato. Conecte um sensor!");
-  readFinger();
+  return -1;
   }
 
 
@@ -80,7 +80,7 @@ int readFinger() {
   //verifica se a digital lida está entre as digitais cadastradas no sensor
   digital = finger.fingerFastSearch();
   if (digital != FINGERPRINT_OK){  
-    Serial.println("DIGITAL NAO ENCONTRADA. TENTE NOVAMENTE!"); 
+    Serial.println("Digital nao encontrada. TENTE NOVAMENTE!"); 
     return -1; //retorna -1 e sai da função addFinger() somente se a digital for reconhecida entre as digitais presentes no sensor
     }
   
