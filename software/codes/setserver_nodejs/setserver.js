@@ -1,84 +1,99 @@
 var net = require('net');
 var mysql = require('mysql');
-var sockets = [];
-var string;
-var fingerServer = net.createServer(newSocket);
 var fingerDBpool = mysql.createPool({
-    host: 'IP DO SERVIDOR MYSQL',
+    host: '107.170.7.193',
     user: 'root',
-    password: 'SENHA',
-    database: 'NOME DA DB'
+    password: 'fsdfsdfsd',
+    database: 'nodefinger'
 });
-console.log("**************************************************************");
-console.log("**                     Nodefinger Server                    **");
-console.log("**************************************************************");
-fingerServer.listen(7000);
-console.log(">Servidor iniciado, aguardando conexões dos clientes...");
 
-function cleanInput(data) {
-    return data.toString().replace(/(\r\n|\n|\r)/gm, "");
-}
+var hostip = '192.168.14.22';
+var port = 7000;
 
-function newSocket(socket) {
-    console.log(">Cliente conectado");
-    socket.on('data', function(data) {
-        fingerDBpool.getConnection(function(err, fingerDB) {
+net.createServer(function(sock) {
+    var sessionStarted = false;
+    console.log('[TCP] Connection from ' + sock.remoteAddress +':'+ sock.remotePort);
+    console.log('[TCP] Waiting for authentication from client...')
+    sock.on('data', function(data) {
+        if(!sessionStarted){
+            data = JSON.parse(data);
+            if(data.type == 'conn'){
+                if(data.hwid == 'GT-SET'){
+                    //VALID!
+                    console.log("[TCP] Auth OK! Valid access from ID: " + data.hwid);
+                    sock.write(JSON.stringify({type: 'conn', 'auth': 'ok', name: "GT-SET"}));
+                    setInterval(function(){
+                        if(sessionStarted){
+                            sock.write(JSON.stringify({type: "ping"}));
+                        }
+                    }, 50000);
+                    sessionStarted = true;
+                }
+                else{
+                    console.log("[TCP] Auth FAIL! Invalid access from ID: " + data.hwid);
+                    sock.write(JSON.stringify({type: 'conn', 'auth': 'fail'}));
+                    
+                }
+            }
+        }
+        else{
+            console.log('DATA ' + sock.remoteAddress + ': ' + data);
+            data = JSON.parse(data);
+            switch(data.type) {
+                case "fingerid":
+                    checkID(data.id);
+                    break
+                case "pong":
+                    //console.log("KEEPALIVE OK");
+                    break;
+                case "addfinger":
+                    sock.write(JSON.stringify({type: "register", id: 28}));
+                    break;
+                default:
+                    //sock.write(JSON.stringify(data));
+                    break;
+            }
+        };
+    });
+    
+
+    sock.on('error', function(data) {
+        sessionStarted = !sessionStarted;
+        console.log('[TCP] Closed connection from ' + sock.remoteAddress +':'+ sock.remotePort);
+    });
+    
+    function checkID(id){
+    fingerDBpool.getConnection(function(err, fingerDB) {
         if(err) { 
             console.log(err); 
             callback(true); 
             return; 
         }
-        var fingerData = cleanInput(data).toString().split(".");
-        if (fingerData[2] == "0") {
-            fingerDB.query('SELECT * from users WHERE fingerid=' + fingerData[1], function(err, dbData, fields) {
-                 if (!err && dbData != 0) {
-                    (dbData[0].admin && dbData[0].active) ? socket.write("1"): socket.write("0");
-                    console.log(">Nome: " + dbData[0].name + " | ID do usuário: " + dbData[0].userid + " | ID biométrico: " + dbData[0].fingerid);
+        fingerDB.query('SELECT * from users WHERE fingerid=' + id, function(err, dbData, fields) {
+                 if (!err && dbData != 0 && id>-1) {
+                     console.log(">Nome: " + dbData[0].name + " | ID do usuário: " + dbData[0].userid + " | ID biométrico: " + dbData[0].fingerid);
+                    sock.write(JSON.stringify({type: "auth", auth: "ok", admin: dbData[0].admin, name: dbData[0].name}));
+                
                     var post = {
-                        fingerid: fingerData[1],
+                        fingerid: id,
                         timestamp: Math.floor(new Date() / 1000)
                     };
                     var query = fingerDB.query('INSERT INTO history SET ?', post, function(err, result) {
                        fingerDB.release();
                     });
-                } else if (!err && dbData == 0) {
-                    socket.write("2")
-                    console.log(">Usuário não encontrado! FINGER ID:" + fingerData[1]);
+                } else if (!err && dbData == 0 && id>-1) {
+                    sock.write(JSON.stringify({type: "auth", auth: "fail"}));
+                    console.log(">Usuário não encontrado! FINGER ID:" + id);
                 } else {
-                    socket.write("2");
-                    console.log(">Usuário não encontrado!");
+                    sock.write(JSON.stringify({type: "auth", auth: "fail"}));
+                    console.log(">Usuário não cadastrado!");
                 }
             });
-        } else if (fingerData[2] == "2") {
-            console.log(">Usuário deletado! Finger ID: " + fingerData[1]);
-            var post = {
-                fingerid: fingerData[1]
-            };
-            var query = fingerDB.query('DELETE FROM users WHERE ?', post, function(err, result) {
-               fingerDB.release();
-            });
-        } else {
-            console.log(">Novo usuário cadastrado! ID: " + fingerData[0]);
-            var post = {
-                userid: fingerData[0],
-                fingerid: fingerData[1],
-                name: "CHANGE ME"
-            };
-            var query = fingerDB.query('INSERT INTO users SET ?', post, function(err, result) {
-              fingerDB.release();
-            });
-        }
         });
-    });
-    socket.on('error', function(err) {
-        if (err)
-            console.log(">Cliente desconectado");
-    });
-    socket.on('end', function() {
-        console.log(">Cliente desconectado");
-    });
-    setInterval(function() {
-        socket.write(new Buffer(0));
-    }, 30000);
+    }
     
-}
+    
+}).listen(port);
+
+
+console.log('Server listening on ' + hostip +':'+ port);
