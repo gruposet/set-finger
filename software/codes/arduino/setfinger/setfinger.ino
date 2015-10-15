@@ -51,8 +51,9 @@ char teclas[rows][cols] = {
   {'7','8','9'},
   {'*','0','#'}
 };
-byte linha_pino[] = {44, 42, 40, 38}; //Pinos do arduino que estao conectados as linhas do teclado
-byte coluna_pino[] = {36, 34, 32};//Pinos do arduino que estao conectados as colunas do teclado
+byte linha_pino[] = {32, 34, 36, 38}; //Pinos do arduino que estao conectados as linhas do teclado
+byte coluna_pino[] = {40, 42, 44};//Pinos do arduino que estao conectados as colunas do teclado
+
 //Cria o objeto, teclado
 Keypad teclado = Keypad( makeKeymap(teclas), linha_pino, coluna_pino, rows, cols);
 

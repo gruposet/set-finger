@@ -175,18 +175,18 @@
 <text x="85.725" y="29.845" size="1.6764" layer="21" font="vector" ratio="15" rot="R90">DIGITAL</text>
 <text x="67.31" y="5.08" size="1.9304" layer="16" ratio="13" distance="41" rot="MR180">GT-SET/CTIC</text>
 <text x="86.36" y="6.35" size="1.9304" layer="16" ratio="13" distance="41" rot="MR0">SetFinger 1.0</text>
-<text x="13.97" y="19.05" size="1.778" layer="23">gnd -&gt; gnd</text>
-<text x="13.97" y="21.59" size="1.778" layer="23">vcc -&gt; vcc</text>
-<text x="13.97" y="24.13" size="1.778" layer="23">v0~&gt;gnd</text>
-<text x="13.97" y="26.67" size="1.778" layer="23">rs -&gt; 22</text>
-<text x="13.97" y="29.21" size="1.778" layer="23">r/w -&gt; gnd</text>
-<text x="13.97" y="31.75" size="1.778" layer="23">e -&gt; 24</text>
-<text x="13.97" y="34.29" size="1.778" layer="23">db4 -&gt; 26</text>
-<text x="13.97" y="36.83" size="1.778" layer="23">db5 -&gt; 28</text>
-<text x="13.97" y="39.37" size="1.778" layer="23">db6 -&gt; 30</text>
-<text x="13.97" y="41.91" size="1.778" layer="23">db7 -&gt; 32</text>
-<text x="13.97" y="44.45" size="1.778" layer="23">led+ -&gt; 34</text>
-<text x="13.97" y="46.99" size="1.778" layer="23">led- -&gt; gnd</text>
+<text x="13.97" y="17.78" size="1.778" layer="23">gnd -&gt; gnd</text>
+<text x="13.97" y="20.32" size="1.778" layer="23">vcc -&gt; vcc</text>
+<text x="19.05" y="22.86" size="1.778" layer="23">V0~&gt;gnd</text>
+<text x="17.78" y="25.4" size="1.778" layer="23">RS -&gt; 3</text>
+<text x="13.97" y="27.94" size="1.778" layer="23">R/W -&gt; gnd</text>
+<text x="19.05" y="30.48" size="1.778" layer="23">E -&gt; 4</text>
+<text x="15.24" y="33.02" size="1.778" layer="23">DB4 -&gt; 5</text>
+<text x="15.24" y="35.56" size="1.778" layer="23">DB5 -&gt; 6</text>
+<text x="15.24" y="38.1" size="1.778" layer="23">DB6 -&gt; 7</text>
+<text x="15.24" y="40.64" size="1.778" layer="23">DB7 -&gt; 8</text>
+<text x="13.97" y="43.18" size="1.778" layer="23">led+ -&gt; 5v</text>
+<text x="12.7" y="45.72" size="1.778" layer="23">led- -&gt; gnd</text>
 <text x="50.8" y="27.94" size="1.778" layer="23" rot="R90">VCC</text>
 <text x="53.34" y="27.94" size="1.778" layer="23" rot="R90">RX</text>
 <text x="55.88" y="27.94" size="1.778" layer="23" rot="R90">TX</text>
@@ -1253,8 +1253,8 @@ design rules under a new name.</description>
 <wire x1="39.37" y1="50.927" x2="39.37" y2="50.8" width="0.2032" layer="1"/>
 <contactref element="LCD" pad="11"/>
 <wire x1="34.29" y1="44.45" x2="36.83" y2="44.45" width="1.4224" layer="16"/>
-<wire x1="36.83" y1="44.45" x2="39.37" y2="46.99" width="1.4224" layer="16"/>
-<wire x1="39.37" y1="46.99" x2="39.37" y2="50.8" width="1.4224" layer="16"/>
+<wire x1="36.83" y1="44.45" x2="39.37" y2="46.99" width="0" layer="19" extent="1-16"/>
+<wire x1="39.37" y1="46.99" x2="39.37" y2="50.8" width="0" layer="19" extent="1-16"/>
 <wire x1="39.37" y1="50.8" x2="39.37" y2="50.8" width="0" layer="19" extent="1-16"/>
 </signal>
 <signal name="D10">
