@@ -175,6 +175,7 @@ uint8_t addFinger(uint8_t id) {
     lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
     lcd.print("TENTE NOVAMENTE!");
     client.print("{\"type\":\"registerfail\"}"); 
+    return 0;
   }
   //Serial.println("MODELO CRIADO COM SUCESSO. DIGITAIS COMPATIVEIS");
   delay(1000); 
@@ -418,4 +419,5 @@ void registerFinger(int id){            //Função que envia o pedido de ID ao s
     addFinger(id);   
   } 
   fullCircle = true; 
+  waitingKeyboard = false;
 }
