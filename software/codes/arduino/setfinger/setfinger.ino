@@ -1,13 +1,16 @@
-/*>>>>>>>>>>>>>>>>>>>>>>>Bibliotecas e pinos<<<<<<<<<<<<<<<<<<<*/
-/*-----------------------Definindo ethernet--------------------*/
-#include <SPI.h>
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Bibliotecass e Configurações >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
+/*-----------------------inclusão de biblioteca ethernet shield--------------------*/
+#include <SPI.h> 
 #include <Ethernet.h>
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,22); // IP Adress to our Server
-const int serverPort=7000;
+IPAddress serverIP(192,168,14,22); // endereço IP da máquina servidor node.js
+const int serverPort=7000; //porta fonte pode ser de 1-65535
+
 // Inicializa biblioteca ethernet cliente
 EthernetClient client;
-/*-------------Definindo biblioteca fingerprint----------------*/
+
+/*-------------inclusão de biblioteca do sensor fingerprint----------------*/
 #include <Adafruit_Fingerprint.h>
 //decisão de biblioteca a ser utilizada de acordo com a versão da IDE
 #if ARDUINO >= 100
@@ -17,14 +20,15 @@ EthernetClient client;
  #include <NewSoftSerial.h>
  NewSoftSerial mySerial(11, 12);
 #endif
+
 //Declaração do objeto para comunicação.
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
-/*-------------Definindo biblioteca LCD e seus pinos-----------*/
+
+/*-------------inclusão de biblioteca de LCD-----------*/
 #include <LiquidCrystal.h> // declara a utilização da biblioteca LiquidCrystal
 #define luz_fundo  7
 //cria um objeto tipo LiquidCrystal que chamei de "lcd" nos pinos citados:
 LiquidCrystal lcd(3, 4, 5, 6, 7, 8); //(RS, E, D4, D5, D6, D7)
-/*---Definindo biblioteca ArduinoThread e threads de KeepAlive e Fingerprint----*/
 
 
 
@@ -32,11 +36,15 @@ LiquidCrystal lcd(3, 4, 5, 6, 7, 8); //(RS, E, D4, D5, D6, D7)
 #define red 26    //define o pino do LED como vermelho
 #define green 24   // define o pino do LED como verde
 #define blue 22   //define o pino do LED como azul
+
+
 /*-------------Definindo o pino do buzzer e relé---------------*/
 int const buzzer = 30;
 int const rele = 28;
 /*------------------------------------------------------------*/
-/*-------------Definindo teclado 4x3(Keypad) e pinos----------*/
+
+
+/*-------------Inclusão de biblioteca e configuração do teclado matricial 4x3(Keypad)----------*/
 #include <Keypad.h>
 const byte ROWS = 4; //4 linhas
 const byte COLS = 3; //3 colunas
@@ -48,20 +56,21 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {32, 34, 36, 38}; //define os pinos de linha do teclado
 byte colPins[COLS] = {40, 42, 44}; //define os pinos de coluna do teclado
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-/*--------------------------------------------------*/
-#include <String.h>
-#include <ArduinoJson.h>
-String SETFINGER_HWID = "GT-SET";       //Identifca o ID da tranca para o servidor
-String welcomeName;                     //Nome de boas-vindas que a tranca recebe do serivodr
-bool AuthOk = false;                    //Viariável que identifica se a tranca foi autenticada com sucesso pelo servidor
-bool waitingResponse = false;           //Variável de flag que indica se a tranca está aguardando alguma resposta do servidor
-bool fullCircle = true;                 //Variável que indica se todos os passos foram executados, para voltar ao estado principal
-bool waitingKeyboard = false;           //      ''      se a tranca está aguardando algum comando do teclado
-bool waitingID = false;                 //      ''      se a tranca está aguardando que o servidor responda a ID a ser gravada no sensor
-String lastName;
-int lastID;
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>SETUP<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+/*-------------------------Declaração de variáveis de estado (flag)-------------------------*/
+#include <ArduinoJson.h>
+String SETFINGER_HWID = "GT-SET";       //Identificação do dispositivo SF para o servidor
+String welcomeName;                     //Nome de boas-vindas que o dispositivo SF recebe do serivodr
+bool AuthOk = false;                    //Viariável que identifica se o dispositivo SF foi autenticado com sucesso pelo servidor
+bool waitingResponse = false;           //Variável que indica se o dispositivo SF está aguardando alguma resposta do servidor
+bool waitingKeyboard = false;           //Variável que indica se o dispositivo SF está aguardando algum comando do teclado
+bool waitingID = false;                 //Variável que indica se o dispositivo SF está aguardando que o servidor responda o ID a ser atribuido para a digital que será gravada no sensor
+bool fullCircle = true;                 //Variável que indica se todos os passos foram executados, para retornar ao estado principal
+
+String userName; //armazena o nome fornecido pelo servidor até
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SETUP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void setup(){
   Serial.begin(115200);
   finger.begin(57600);// Define a taxa de dados para a porta serial do sensor
@@ -87,7 +96,7 @@ void setup(){
 }
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>LOOP<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LOOP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void loop(){
   if(AuthOk){
 
@@ -121,15 +130,21 @@ void loop(){
     }
   }
 
+
+  
+
   readTCPStream();              //Chamada de função que lê constantemente o que é enviado pelo servidor
 
   if (!client.connected()) {    //É executado quando a conexão entre a tranca e o servidor é perdida
       Serial.println("Disconnected!");
       serverConnect();
+      
   }
 }
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>funções<<<<<<<<<<<<<<<<<<<<<<<<<*/
+/*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||FUNÇÕES|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Grava digitais no sensor fingerprint >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 uint8_t addFinger(uint8_t id) {
   Serial.println("Procurando sensor...");
   if(finger.verifyPassword()) {
@@ -191,6 +206,9 @@ uint8_t addFinger(uint8_t id) {
   delay(1000);
 }
 
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Leitura e autenticação de digitais >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 int readFinger() {
   //Serial.println("Procurando sensor...");
   if(finger.verifyPassword()) {
@@ -220,6 +238,7 @@ int readFinger() {
   return 0;
 }
 
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exclusão de digitais >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 uint8_t deleteFinger(uint8_t id) {
   uint8_t digital;
   digital = finger.deleteModel(id);
@@ -233,6 +252,7 @@ uint8_t deleteFinger(uint8_t id) {
   }
 }
 
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Imprime mensagem no display LCD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void printMessage(String row1, String row2) {
       lcd.clear(); // limpa o conteúdo no dysplay LCD
       lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
@@ -241,6 +261,7 @@ void printMessage(String row1, String row2) {
       lcd.print(row2);
 }
 
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal alerta vermelho >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void redColorAlert() { //significa usuário não autorizado ou acesso negado
   short int i=0;
   for (i=0;i<2;i++){
@@ -254,12 +275,13 @@ void redColorAlert() { //significa usuário não autorizado ou acesso negado
     }
 }
 
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal de alerta verde >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void greenColorAlert() { //significa usuário autorizado ou tudo ok!
   short int i=0;
   for (i=0;i<2;i++){
       digitalWrite(blue,LOW);
-      digitalWrite(green,HIGH);
       digitalWrite(red,LOW);
+      digitalWrite(green,HIGH);
       tone(buzzer, 750, 500);
       delay(500);
       digitalWrite(green,LOW);
@@ -267,18 +289,22 @@ void greenColorAlert() { //significa usuário autorizado ou tudo ok!
     }
 }
 
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal de alerta azul >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void blueColorAlert() { //significa usuário admin autorizado ou conexão com o servidor.
   short int i=0;
   for (i=0;i<2;i++) {
-     digitalWrite(blue,HIGH);
      digitalWrite(green,LOW);
      digitalWrite(red,LOW);
+     digitalWrite(blue,HIGH);
      tone(buzzer, 500, 300);
      delay(25);
      digitalWrite(blue,LOW);
      delay(250);
   }
 }
+
+
+
 
 void handleConnEvents(const char* msg, String name){ //trata a mensagem de conexão recebida do servidor
     if(strcmp(msg, "fail") == 0){                    //Executado quando há falha de autenticação com o servidor
@@ -391,7 +417,7 @@ void openDoor(){
   lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
   lcd.print("BEM-VINDO(A)");
   lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
-  lcd.print(lastName);
+  lcd.print(userName);
   digitalWrite(rele, HIGH);
   delay(250);
   digitalWrite(rele, LOW);
@@ -399,7 +425,7 @@ void openDoor(){
 }
 
 void openMenu(String name, int admin){   //Menu do administrador
-  lastName = name;
+  userName = name;
   if(!admin)
     openDoor();
   else{
