@@ -1,3 +1,7 @@
+*********************************************************************
+****************************SET-FINGER*******************************
+***********************GRUPO DE TRABALHO-SET*************************
+*********************************************************************
 Para executar esta aplicação (servidor node para a comunicação com o hardware setfinger), é necessário instalar o pacote nodejs e npm.
 
 Instalar:

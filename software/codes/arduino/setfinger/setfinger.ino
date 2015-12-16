@@ -93,11 +93,13 @@ void setup(){
   }
   delay(1000);
   serverConnect();
+
 }
 
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LOOP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void loop(){
+  
   if(AuthOk){
 
     if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
@@ -143,6 +145,37 @@ void loop(){
 }
 
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||FUNÇÕES|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+
+void serverConnect() {  //estabelece uma conexão TCP com o servidor e envia a mensagem de "boas-vindas"
+  client.stop();
+  AuthOk = false;
+  Serial.println("Connecting...");
+  printMessage("CONECTANDO...","");
+  if(client.connect(serverIP, serverPort)) {
+    Serial.println("Connected!");
+
+    StaticJsonBuffer<64> jsonBuffer;                    //Etapa de criação de uma string JSON
+    JsonObject& root = jsonBuffer.createObject();
+    root["type"] = "conn";
+    root["hwid"] = SETFINGER_HWID;
+    char buffer[64];
+    root.printTo(buffer, sizeof(buffer)); //transforma um objeto json em uma string json e armazena na variavel buffer
+    client.print(buffer);
+    
+    fullCircle = false;
+    waitingResponse = false;
+    waitingKeyboard = false;
+  } else {
+    printMessage("ERRO", "ID: #0001");
+    Serial.println("Connection failed!");
+    redColorAlert();
+  }
+}
+
+
+
+
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Grava digitais no sensor fingerprint >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 uint8_t addFinger(uint8_t id) {
@@ -322,29 +355,6 @@ void handleConnEvents(const char* msg, String name){ //trata a mensagem de conex
         }
 }
 
-void serverConnect() {  //estabelece uma conexão TCP com o servidor e envia a mensagem de "boas-vindas"
-  client.stop();
-  AuthOk = false;
-  Serial.println("Connecting...");
-  printMessage("CONECTANDO...","");
-  if(client.connect(serverIP, serverPort)) {
-    Serial.println("Connected!");
-    fullCircle = false;
-    waitingResponse = false;
-    waitingKeyboard = false;
-    StaticJsonBuffer<64> jsonBuffer;                    //Etapa de criação de uma string JSON
-    JsonObject& root = jsonBuffer.createObject();
-    root["type"] = "conn";
-    root["hwid"] = SETFINGER_HWID;
-    char buffer[64];
-    root.printTo(buffer, sizeof(buffer));
-    client.print(buffer);
-  } else {
-    printMessage("ERRO", "ID: #0001");
-    Serial.println("Connection failed!");
-    redColorAlert();
-  }
-}
 
 void readTCPStream(){ //lê o JSON enviado pelo servidor e armazena num array de char para ser tratado pela lib
     char stream[128]; //também trata as mensagens recebidas direcionando para cada função específica
@@ -419,7 +429,7 @@ void openDoor(){
   lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
   lcd.print(userName);
   digitalWrite(rele, HIGH);
-  delay(250);
+  delay(1000);
   digitalWrite(rele, LOW);
   greenColorAlert();
 }

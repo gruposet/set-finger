@@ -1,8 +1,17 @@
 {
   "name": "setserver",
   "version": "2.0.0",
+  "description": "Servidor da tranca biométrica do SET",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lucas Vasconcelos (@lucaslg26)",
+  "license": "Apache-2.0",
   "dependencies": {
-    "mysql": "^2.5.4",
-    "net": "^1.0.2"
+    "mysql": "^2.9.0",
+    "net": "^1.0.2",
+    "express": "~4.13.3",
+    "socket.io": "~1.3.7"
   }
 }
