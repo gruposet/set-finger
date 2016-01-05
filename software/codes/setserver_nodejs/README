@@ -10,6 +10,6 @@ sudo apt-get install npm
 
 Executar aplicação
 No diretório setserver_nodejs execute:
-npm install
-nodejs setserver(Linux)
-node setserver(Windows)
+npm install ou npm install -g forever
+nodejs setserver(Linux) ou forever setserver
+node setserver(Windows) ou forever setserver
