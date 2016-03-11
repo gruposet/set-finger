@@ -140,7 +140,7 @@ void loop(){
   if (!client.connected()) {    //É executado quando a conexão entre a tranca e o servidor é perdida
       Serial.println("Disconnected!");
       serverConnect();
-      
+
   }
 }
 
@@ -231,15 +231,14 @@ uint8_t addFinger(uint8_t id) {
     lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
     lcd.print("TENTE NOVAMENTE!");
     client.print("{\"type\":\"registerfail\"}");
-    return 0;
+    return -1;
   }
   //Serial.println("MODELO CRIADO COM SUCESSO. DIGITAIS COMPATIVEIS");
   delay(1000);
   //gravação do modelo da digital
+  
   digital = finger.storeModel(id);
-  if(digital != FINGERPRINT_OK)
-    return -1; //retorna -1 e sai da função addFinger() somente se a gravação do modelo não tiver ocorrido com sucesso
-
+  
   lcd.clear(); // limpa o conteúdo no dysplay LCD
   lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
   lcd.print("Usuario OK");
@@ -421,9 +420,54 @@ void readTCPStream(){ //lê o JSON enviado pelo servidor e armazena num array de
         lcd.clear(); 
         lcd.setCursor(0,0); 
         lcd.print("SAIU. E AGORA?");
+
+
+        if(AuthOk){
+
+        if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
+        char key = keypad.getKey();   //partir de uma tecla específica
+        if (key != NO_KEY){
+        if(key == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
+            openDoor();
+            fullCircle = true;
+        }
+        if(key == (char)50){
+          registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
+        }
+        waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
+        }
+        }
+        if(fullCircle && !waitingKeyboard && !waitingID){
+        lcd.clear(); // limpa o conteúdo no dysplay LCD
+        lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+        lcd.print("BEM-VINDO(A) AO");
+        lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
+        lcd.print(welcomeName);
+        fullCircle = false;
+        }
+        if(!waitingResponse && !waitingKeyboard && !waitingID){     //Estado padrão da tranca, sempre executado enquanto a tranca estiver ociosa
+        int fingerID = readFinger();
+        if(fingerID){
+        sendFingerID(fingerID);
+        waitingResponse = true;
+        }
+        }
+        }
+
+
+
+
+  
+
+
+
+
+
+
+
         
       }
-      flag = !flag;
+      flag = false;
     }
 }
 
@@ -446,7 +490,7 @@ void openDoor(){
   lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
   lcd.print(userName);
   digitalWrite(rele, HIGH);
-  delay(1000);
+  delay(2000);
   digitalWrite(rele, LOW);
   greenColorAlert();
 }
@@ -472,8 +516,6 @@ void registerFinger(int id){            //Função que envia o pedido de ID ao s
     addFinger(id);
     lcd.clear(); 
     lcd.setCursor(0,0); 
-    lcd.print("SAIU. E AGORA?");
+   // lcd.print("SAIU. E AGORA?");
   }
-//  fullCircle = true;
-//  waitingKeyboard = false;
 }

@@ -30,7 +30,7 @@ void setup()
 void loop()                    
 {  
   
-deleteFinger(0);//INFORME O ID DESEJADO A SER EXCLUÍDO
+deleteFinger(3);//INFORME O ID DESEJADO A SER EXCLUÍDO
   
 }
 
