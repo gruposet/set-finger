@@ -1,0 +1,36 @@
+{
+  "name": "setserver",
+  "version": "3.0.0",
+  "description": "Servidor do SET-FINGER",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucaslg26/setserver.git"
+  },
+  "keywords": [
+    "servidor",
+    "setfinger",
+    "biometria",
+    "biometric",
+    "fingerprint",
+    "nodejs",
+    "arduino",
+    "tcp"
+  ],
+  "author": "Lucas Vascooncelos (lucaslg26@yahoo.com.br)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/lucaslg26/setserver/issues"
+  },
+  "homepage": "https://github.com/lucaslg26/setserver#readme",
+  "dependencies": {
+    "Array.prototype.forEachAsync": "^2.1.2",
+    "chalk": "^1.1.1",
+    "futures": "^2.3.3",
+    "mysql": "^2.10.2",
+    "sequelize": "^3.17.3"
+  }
+}

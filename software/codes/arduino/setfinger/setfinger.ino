@@ -490,7 +490,7 @@ void openDoor(){
   lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
   lcd.print(userName);
   digitalWrite(rele, HIGH);
-  delay(2000);
+  delay(500);
   digitalWrite(rele, LOW);
   greenColorAlert();
 }

@@ -1,0 +1,2 @@
+# setserver
+SET-FINGER server
