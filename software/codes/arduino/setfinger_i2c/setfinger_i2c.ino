@@ -114,6 +114,8 @@ void loop(){
          Serial.print("tecla: ");
          Serial.println(tecla);
          if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
+            Serial.print("opendoor");
+            Serial.print(tecla);
             openDoor();
             fullCircle = true;
         }
@@ -441,6 +443,8 @@ void readTCPStream(){ //lê o JSON enviado pelo servidor e armazena num array de
         Serial.print("tecla: ");
         Serial.println(tecla);
         if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
+            Serial.print("opendoor");
+            Serial.print(tecla);
             openDoor();
             fullCircle = true;
         }
@@ -540,5 +544,8 @@ void registerFinger(int id){            //Função que envia o pedido de ID ao s
 char leitura(){
   char keypress = Keypad.Getkey();  // put value of key pressed in variable 'keypress'
   while ((Keypad.Key_State())){}  // Stay here while Key is held down
+  if (keypress != (char)49 && keypress != (char)50){
+    leitura();
+  }
   return keypress;
 }
