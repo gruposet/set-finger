@@ -4,7 +4,7 @@
 #include <SPI.h> 
 #include <Ethernet.h>
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,199); // endereço IP da máquina servidor node.js
+IPAddress serverIP(192,168,14,198); // endereço IP da máquina servidor node.js
 const int serverPort=7000; //porta fonte pode ser de 1-65535
 
 // Inicializa biblioteca ethernet cliente
@@ -46,17 +46,17 @@ int const rele = 28;
 
 
 /*-------------Inclusão de biblioteca e configuração do teclado matricial 4x3(Keypad)----------*/
-#include <Keypad.h>
-const byte ROWS = 4; //4 linhas
-const byte COLS = 3; //3 colunas
-char keys[ROWS][COLS] = {
-  {'1','2','3'},
-  {'4','5','6'},
-  {'7','8','9'},
-  {'*','0','#'}};
-byte rowPins[ROWS] = {32, 34, 36, 38}; //define os pinos de linha do teclado
-byte colPins[COLS] = {40, 42, 44}; //define os pinos de coluna do teclado
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+#include <OnewireKeypad.h>
+
+char KEYS[]= {
+  '3','2','1',//'A',
+  '6','5','4',//'B',
+  '9','8','7',//'C',
+  '#','0','*',//'D'
+};
+
+OnewireKeypad <Print, 12 > Keypad(Serial, KEYS, 4, 3, A3, 4700, 1000 );
+
 
 
 /*-------------------------Declaração de variáveis de estado (flag)-------------------------*/
@@ -76,6 +76,9 @@ void setup(){
   Serial.begin(115200);
   finger.begin(57600);// Define a taxa de dados para a porta serial do sensor
 
+  Keypad.SetHoldTime(50);  // Key held time in ms
+  Keypad.SetDebounceTime(30); // Key Debounce time in ms
+  
   lcd.begin (16, 2);
   lcd.setBacklight(HIGH);
 
@@ -93,6 +96,7 @@ void setup(){
   }
   delay(1000);
   serverConnect();
+  
 
 }
 
@@ -103,13 +107,17 @@ void loop(){
   if(AuthOk){
 
     if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
-      char key = keypad.getKey();   //partir de uma tecla específica
-      if (key != NO_KEY){
-        if(key == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
+      char tecla = Keypad.Key_State();   //partir de uma tecla específica
+      Serial.println(tecla);
+      if (tecla == 3){
+         tecla=leitura();
+         Serial.print("tecla: ");
+         Serial.println(tecla);
+         if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
             openDoor();
             fullCircle = true;
         }
-        if(key == (char)50){
+        if(tecla == (char)50){
           registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
         }
         waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
@@ -425,13 +433,18 @@ void readTCPStream(){ //lê o JSON enviado pelo servidor e armazena num array de
         if(AuthOk){
 
         if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
-        char key = keypad.getKey();   //partir de uma tecla específica
-        if (key != NO_KEY){
-        if(key == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
+
+        char tecla = Keypad.Key_State();   //partir de uma tecla específica
+        Serial.println(tecla);
+        if (tecla == 3){
+        tecla=leitura();
+        Serial.print("tecla: ");
+        Serial.println(tecla);
+        if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
             openDoor();
             fullCircle = true;
         }
-        if(key == (char)50){
+        if(tecla == (char)50){
           registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
         }
         waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
@@ -518,4 +531,14 @@ void registerFinger(int id){            //Função que envia o pedido de ID ao s
     lcd.setCursor(0,0); 
    // lcd.print("SAIU. E AGORA?");
   }
+}
+
+
+
+
+
+char leitura(){
+  char keypress = Keypad.Getkey();  // put value of key pressed in variable 'keypress'
+  while ((Keypad.Key_State())){}  // Stay here while Key is held down
+  return keypress;
 }
