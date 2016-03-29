@@ -88,12 +88,13 @@ function checkFinger(id, fn){
         if(results[0]){
             fn(JSON.stringify({ type: "auth", auth: "ok", admin: results[0].admin, name: results[0].name }));
             log('client', "Nome: " + results[0].name + " | ID do usuário: " + results[0].userid + " | ID biométrico: " + results[0].fingerid);
+            sequelize.query(`INSERT INTO history (fingerid, nome, timestamp) VALUES (${id}, '${results[0].name}', ${Math.floor(new Date() / 1000)})`);	    
         } else {
             fn(JSON.stringify({ type: "auth", auth: "fail" }));
             log('error', 'Usuário não autorizado! ID: ' + id);
         }
     })
-    sequelize.query('INSERT INTO history (fingerid, timestamp) VALUES (' + id + ', ' + Math.floor(new Date() / 1000)+ ')');
+    
 }
 
 function getLastID(id, fn){
