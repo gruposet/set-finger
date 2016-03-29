@@ -215,15 +215,6 @@ uint8_t addFinger(uint8_t id) {
   digital = finger.image2Tz(1);
   if(digital != FINGERPRINT_OK)
     return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da primeira digital não tiver ocorrido com sucesso
-  lcd.clear(); // limpa o conteúdo no dysplay LCD
-  lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
-  lcd.print("Retire o dedo");
-  delay(3000);
-  
-  lcd.clear(); // limpa o conteúdo no dysplay LCD
-  lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
-  lcd.print("Coloque o dedo");
-  delay(1000);
   
   digital= finger.getImage();
   while(digital != FINGERPRINT_OK) {
