@@ -84,11 +84,11 @@ function sendMessage(sock, type, data){
 }
 
 function checkFinger(id, fn){
-    sequelize.query('SELECT * from users WHERE fingerid=' + id).spread(function(results, metadata) {
+    sequelize.query('SELECT * from users WHERE finger_id=' + id).spread(function(results, metadata) {
         if(results[0]){
-            fn(JSON.stringify({ type: "auth", auth: "ok", admin: results[0].admin, name: results[0].name }));
-            log('client', "Nome: " + results[0].name + " | ID do usuário: " + results[0].userid + " | ID biométrico: " + results[0].fingerid);
-            sequelize.query(`INSERT INTO history (fingerid, nome, timestamp) VALUES (${id}, '${results[0].name}', ${Math.floor(new Date() / 1000)})`);	    
+            fn(JSON.stringify({ type: "auth", auth: "ok", admin: results[0].access_level, name: results[0].name }));
+            log('client', "Nome: " + results[0].name + " | ID biométrico: " + results[0].finger_id);
+            sequelize.query(`INSERT INTO history (finger_id, name, timestamp) VALUES (${id}, '${results[0].name}', ${Math.floor(new Date() / 1000)})`);	    
         } else {
             fn(JSON.stringify({ type: "auth", auth: "fail" }));
             log('error', 'Usuário não autorizado! ID: ' + id);
@@ -99,14 +99,14 @@ function checkFinger(id, fn){
 
 function getLastID(id, fn){
     sequelize.query('SELECT * FROM `ids` WHERE available = 1 LIMIT 1').spread(function(results, metadata) {
-        fn(JSON.stringify({ type: "register", id: results[0].fingerid }));
-        lastID = results[0].fingerid;
+        fn(JSON.stringify({ type: "register", id: results[0].finger_id }));
+        lastID = results[0].finger_id;
     })
     log('server', 'O ID: ' + id + ' foi enviado para cadastro de novo usuário!');
 }
 
 function saveUser(id){
-    sequelize.query('INSERT INTO users (userid, name, fingerid) VALUES (\'000000000000\', \'NOVO USUARIO\', \'' + id + '\')');
-    sequelize.query('UPDATE `ids` SET available=0 WHERE fingerid=' + lastID);
+    sequelize.query('INSERT INTO users (name, finger_id) VALUES (\'NOVO USUARIO\', \'' + id + '\')');
+    sequelize.query('UPDATE `ids` SET available=0 WHERE finger_id=' + lastID);
     log('server', 'Novo usuário cadastrado com sucesso! ID: ' + lastID);
 }

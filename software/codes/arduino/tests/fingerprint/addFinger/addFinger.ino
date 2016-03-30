@@ -29,7 +29,7 @@ void setup()
 
 void loop()                     
 {
-  int retorno=addFinger(3);//INFORME O ID DESEJADO A SER CADASTRADO
+  int retorno=addFinger(1);//INFORME O ID DESEJADO A SER CADASTRADO
   Serial.print("retorno: ");
   Serial.println(retorno);
   delay(3000);

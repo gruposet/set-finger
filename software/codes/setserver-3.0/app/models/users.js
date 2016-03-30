@@ -5,13 +5,10 @@ module.exports = function(sequelize, DataTypes) {
     name: {
         type: DataTypes.STRING,
     },
-    userid: {
-        type: DataTypes.STRING
-    },
-    fingerid: {
+    finger_id: {
         type: DataTypes.INT
     },
-    admin: {
+    access_level: {
         type: DataTypes.INT
     },
     active: {
