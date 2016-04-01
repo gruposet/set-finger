@@ -535,6 +535,8 @@ void registerFinger(int id){            //Função que envia o pedido de ID ao s
 char leitura(){
   char keypress = Keypad.Getkey();  // put value of key pressed in variable 'keypress'
   while ((Keypad.Key_State())){}  // Stay here while Key is held down
+  Serial.println("TODAS AS TECLAS:");
+  Serial.println(keypress);
   if (keypress != (char)49 && keypress != (char)50){
     leitura();
   }
