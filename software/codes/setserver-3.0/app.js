@@ -88,7 +88,7 @@ function checkFinger(id, fn){
         if(results[0]){
             fn(JSON.stringify({ type: "auth", auth: "ok", admin: results[0].access_level, name: results[0].name }));
             log('client', "Nome: " + results[0].name + " | ID biométrico: " + results[0].finger_id);
-            sequelize.query(`INSERT INTO history (finger_id, name, timestamp) VALUES (${id}, '${results[0].name}', ${Math.floor(new Date() / 1000)})`);	    
+            sequelize.query(`INSERT INTO history (din, finger_id, name, timestamp) VALUES ('${results[0].din}', ${id}, '${results[0].name}', ${Math.floor(new Date() / 1000)})`);	    
         } else {
             fn(JSON.stringify({ type: "auth", auth: "fail" }));
             log('error', 'Usuário não autorizado! ID: ' + id);

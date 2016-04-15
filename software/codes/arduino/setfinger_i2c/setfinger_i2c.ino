@@ -4,7 +4,7 @@
 #include <SPI.h> 
 #include <Ethernet.h>
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,198); // endereço IP da máquina servidor node.js
+IPAddress serverIP(192,168,14,103); // endereço IP da máquina servidor node.js
 const int serverPort=7000; //porta fonte pode ser de 1-65535
 
 // Inicializa biblioteca ethernet cliente
