@@ -1,11 +1,11 @@
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Bibliotecass e Configurações >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 /*-----------------------inclusão de biblioteca ethernet shield--------------------*/
-#include <SPI.h> 
+#include <SPI.h>
 #include <Ethernet.h>
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress serverIP(192,168,14,103); // endereço IP da máquina servidor node.js
-const int serverPort=7000; //porta fonte pode ser de 1-65535
+IPAddress serverIP(192, 168, 14, 22); // endereço IP da máquina servidor node.js
+const int serverPort = 7000; //porta fonte pode ser de 1-65535
 
 // Inicializa biblioteca ethernet cliente
 EthernetClient client;
@@ -14,11 +14,11 @@ EthernetClient client;
 #include <Adafruit_Fingerprint.h>
 //decisão de biblioteca a ser utilizada de acordo com a versão da IDE
 #if ARDUINO >= 100
- #include <SoftwareSerial.h>
- SoftwareSerial mySerial(11, 12);
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(11, 12);
 #else
- #include <NewSoftSerial.h>
- NewSoftSerial mySerial(11, 12);
+#include <NewSoftSerial.h>
+NewSoftSerial mySerial(11, 12);
 #endif
 
 //Declaração do objeto para comunicação.
@@ -43,20 +43,22 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 int const buzzer = 30;
 int const rele = 28;
 /*------------------------------------------------------------*/
-
-
-/*-------------Inclusão de biblioteca e configuração do teclado matricial 4x3(Keypad)----------*/
-#include <OnewireKeypad.h>
-
-char KEYS[]= {
-  '3','2','1',//'A',
-  '6','5','4',//'B',
-  '9','8','7',//'C',
-  '#','0','*',//'D'
+#include <Keypad_I2C.h>
+#include <Keypad.h>
+#define I2CADDR 0x38
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //three columns
+char keys[ROWS][COLS] = {
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
 };
-
-OnewireKeypad <Print, 12 > Keypad(Serial, KEYS, 4, 3, A3, 4700, 1000 );
-
+// Digitran keypad, bit numbers of PCF8574 i/o port
+byte rowPins[ROWS] = {0, 1, 2, 3}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {4, 5, 6, 7}; //connect to the column pinouts of the keypad
+Keypad_I2C kpd( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR, PCF8574 );
+/*-------------Inclusão de biblioteca e configuração do teclado matricial 4x3(Keypad)----------*/
 
 
 /*-------------------------Declaração de variáveis de estado (flag)-------------------------*/
@@ -72,13 +74,15 @@ bool fullCircle = true;                 //Variável que indica se todos os passo
 String userName; //armazena o nome fornecido pelo servidor até
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SETUP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-void setup(){
-  Serial.begin(115200);
+void setup() {
+
+  Wire.begin( );
+  kpd.begin( makeKeymap(keys) );
+  Serial.begin(9600);
+
   finger.begin(57600);// Define a taxa de dados para a porta serial do sensor
 
-  Keypad.SetHoldTime(50);  // Key held time in ms
-  Keypad.SetDebounceTime(30); // Key Debounce time in ms
-  
+
   lcd.begin (16, 2);
   lcd.setBacklight(HIGH);
 
@@ -90,52 +94,54 @@ void setup(){
   pinMode(rele, OUTPUT); //define pino do relé como saída
 
   Ethernet.begin(mac);
-  Serial.begin(115200);
-  while(!Serial) {
+  while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
   delay(1000);
   serverConnect();
-  
+
 
 }
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LOOP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-void loop(){
-  
-  if(AuthOk){
 
-    if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
-      char tecla = Keypad.Key_State();   //partir de uma tecla específica
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LOOP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+void loop() {
+
+  if (AuthOk) {
+
+    if (waitingKeyboard) {          //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a partir de uma tecla específica
+      char tecla = leitura();         
+      Serial.print("tecla: ");
       Serial.println(tecla);
-      if (tecla == 3){
-         tecla=leitura();
-         Serial.print("tecla: ");
-         Serial.println(tecla);
-         if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
-            Serial.print("opendoor");
-            Serial.print(tecla);
-            openDoor();
-            fullCircle = true;
-        }
-        if(tecla == (char)50){
-          registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
-        }
-        waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
+      if (tecla == '1') {      
+        Serial.print("opendoor");
+        Serial.print(tecla);
+        openDoor();           //Se for pressionada a tecla 1, o relé é acionado.
+        fullCircle = true;
       }
+      if (tecla == '2') {
+        registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
+      }
+
+
+      waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
+
     }
-    if(fullCircle && !waitingKeyboard && !waitingID){
+
+
+
+    if (fullCircle && !waitingKeyboard && !waitingID) {
       lcd.clear(); // limpa o conteúdo no dysplay LCD
-      lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+      lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
       lcd.print("BEM-VINDO(A) AO");
-      lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
+      lcd.setCursor(0, 1); // seta para linha 1, ou seja, a linha de baixo
       lcd.print(welcomeName);
       fullCircle = false;
     }
-    if(!waitingResponse && !waitingKeyboard && !waitingID){     //Estado padrão da tranca, sempre executado enquanto a tranca estiver ociosa
+    if (!waitingResponse && !waitingKeyboard && !waitingID) {   //Estado padrão da tranca, sempre executado enquanto a tranca estiver ociosa
       int fingerID = readFinger();
-      if(fingerID){
+      if (fingerID) {
         sendFingerID(fingerID);
         waitingResponse = true;
       }
@@ -143,13 +149,13 @@ void loop(){
   }
 
 
-  
+
 
   readTCPStream();              //Chamada de função que lê constantemente o que é enviado pelo servidor
 
   if (!client.connected()) {    //É executado quando a conexão entre a tranca e o servidor é perdida
-      Serial.println("Disconnected!");
-      serverConnect();
+    Serial.println("Disconnected!");
+    serverConnect();
 
   }
 }
@@ -161,8 +167,8 @@ void serverConnect() {  //estabelece uma conexão TCP com o servidor e envia a m
   client.stop();
   AuthOk = false;
   Serial.println("Connecting...");
-  printMessage("CONECTANDO...","");
-  if(client.connect(serverIP, serverPort)) {
+  printMessage("CONECTANDO...", "");
+  if (client.connect(serverIP, serverPort)) {
     Serial.println("Connected!");
 
     StaticJsonBuffer<64> jsonBuffer;                    //Etapa de criação de uma string JSON
@@ -172,7 +178,7 @@ void serverConnect() {  //estabelece uma conexão TCP com o servidor e envia a m
     char buffer[64];
     root.printTo(buffer, sizeof(buffer)); //transforma um objeto json em uma string json e armazena na variavel buffer
     client.print(buffer);
-    
+
     fullCircle = false;
     waitingResponse = false;
     waitingKeyboard = false;
@@ -190,7 +196,7 @@ void serverConnect() {  //estabelece uma conexão TCP com o servidor e envia a m
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Grava digitais no sensor fingerprint >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 uint8_t addFinger(uint8_t id) {
   Serial.println("Procurando sensor...");
-  if(finger.verifyPassword()) {
+  if (finger.verifyPassword()) {
     Serial.println("Sensor FingerPrint Encontrado!");
     delay(1000);
   }
@@ -200,36 +206,36 @@ uint8_t addFinger(uint8_t id) {
     addFinger(0);
   }
   uint8_t digital;
-  
-  
+
+
   lcd.clear(); // limpa o conteúdo no dysplay LCD
-  lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+  lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
   lcd.print("Coloque o dedo");
   delay(1000);
-  
-  digital= finger.getImage();
-  while(digital != FINGERPRINT_OK) {
-    digital= finger.getImage();
+
+  digital = finger.getImage();
+  while (digital != FINGERPRINT_OK) {
+    digital = finger.getImage();
   }
-  
+
   digital = finger.image2Tz(1);
-  if(digital != FINGERPRINT_OK)
+  if (digital != FINGERPRINT_OK)
     return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da primeira digital não tiver ocorrido com sucesso
-  
-  digital= finger.getImage();
-  while(digital != FINGERPRINT_OK) {
-     digital= finger.getImage();
+
+  digital = finger.getImage();
+  while (digital != FINGERPRINT_OK) {
+    digital = finger.getImage();
   }
-  
+
   //converte a imagem da segunda digital lida em arquivo caracter
   digital = finger.image2Tz(2);
-  if(digital != FINGERPRINT_OK)  return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da segunda digital não tiver ocorrido com sucesso
+  if (digital != FINGERPRINT_OK)  return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da segunda digital não tiver ocorrido com sucesso
   //criação do modelo para a digital lida
-  
+
   digital = finger.createModel();
-  if(digital != FINGERPRINT_OK) {
+  if (digital != FINGERPRINT_OK) {
     lcd.clear(); // limpa o conteúdo no dysplay LCD
-    lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+    lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
     lcd.print("TENTE NOVAMENTE!");
     client.print("{\"type\":\"registerfail\"}");
     return -1;
@@ -237,17 +243,17 @@ uint8_t addFinger(uint8_t id) {
   //Serial.println("MODELO CRIADO COM SUCESSO. DIGITAIS COMPATIVEIS");
   delay(1000);
   //gravação do modelo da digital
-  
+
   digital = finger.storeModel(id);
-  
+
   lcd.clear(); // limpa o conteúdo no dysplay LCD
-  lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+  lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
   lcd.print("Usuario OK");
   client.print("{\"type\":\"registerok\"}");
   greenColorAlert();
   delay(1000);
   return 0;
-  
+
 }
 
 
@@ -255,7 +261,7 @@ uint8_t addFinger(uint8_t id) {
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Leitura e autenticação de digitais >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 int readFinger() {
   //Serial.println("Procurando sensor...");
-  if(finger.verifyPassword()) {
+  if (finger.verifyPassword()) {
     //Serial.println("Sensor FingerPrint Encontrado!");
   }
   else {
@@ -263,20 +269,20 @@ int readFinger() {
   }
   uint8_t digital;
   //Serial.println("Aguardando uma digital valida. Coloque seu dedo...");
-  digital= finger.getImage();
-  if(digital != FINGERPRINT_OK) {
-    digital= finger.getImage();
+  digital = finger.getImage();
+  if (digital != FINGERPRINT_OK) {
+    digital = finger.getImage();
   }
 
-  if(digital == FINGERPRINT_OK) {
-      digital = finger.image2Tz();
-      if(digital != FINGERPRINT_OK)
-        return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da digital não tiver ocorrido com sucesso
-      digital = finger.fingerFastSearch();
-      if(digital != FINGERPRINT_OK){
-        //Serial.println("DIGITAL NAO ENCONTRADA. TENTE NOVAMENTE!");
-        return -1; //retorna -1 e sai da função addFinger() somente se a digital for reconhecida entre as digitais presentes no sensor
-      }
+  if (digital == FINGERPRINT_OK) {
+    digital = finger.image2Tz();
+    if (digital != FINGERPRINT_OK)
+      return -1; //retorna -1 e sai da função addFinger() somente se a conversão da imagem da digital não tiver ocorrido com sucesso
+    digital = finger.fingerFastSearch();
+    if (digital != FINGERPRINT_OK) {
+      //Serial.println("DIGITAL NAO ENCONTRADA. TENTE NOVAMENTE!");
+      return -1; //retorna -1 e sai da função addFinger() somente se a digital for reconhecida entre as digitais presentes no sensor
+    }
     return finger.fingerID;
   }
   return 0;
@@ -298,189 +304,189 @@ uint8_t deleteFinger(uint8_t id) {
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Imprime mensagem no display LCD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void printMessage(String row1, String row2) {
-      lcd.clear(); // limpa o conteúdo no dysplay LCD
-      lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
-      lcd.print(row1);
-      lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
-      lcd.print(row2);
+  lcd.clear(); // limpa o conteúdo no dysplay LCD
+  lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
+  lcd.print(row1);
+  lcd.setCursor(0, 1); // seta para linha 1, ou seja, a linha de baixo
+  lcd.print(row2);
 }
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal alerta vermelho >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void redColorAlert() { //significa usuário não autorizado ou acesso negado
-  short int i=0;
-  for (i=0;i<2;i++){
-      digitalWrite(blue,LOW);
-      digitalWrite(green,LOW);
-      digitalWrite(red,HIGH);
-      tone(buzzer, 1400, 1000);
-      delay(1000);
-      digitalWrite(red,LOW);
-      delay(100);
-    }
+  short int i = 0;
+  for (i = 0; i < 2; i++) {
+    digitalWrite(blue, LOW);
+    digitalWrite(green, LOW);
+    digitalWrite(red, HIGH);
+    tone(buzzer, 1400, 1000);
+    delay(1000);
+    digitalWrite(red, LOW);
+    delay(100);
+  }
 }
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal de alerta verde >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void greenColorAlert() { //significa usuário autorizado ou tudo ok!
-  short int i=0;
-  for (i=0;i<2;i++){
-      digitalWrite(blue,LOW);
-      digitalWrite(red,LOW);
-      digitalWrite(green,HIGH);
-      tone(buzzer, 750, 500);
-      delay(500);
-      digitalWrite(green,LOW);
-      delay(50);
-    }
+  short int i = 0;
+  for (i = 0; i < 2; i++) {
+    digitalWrite(blue, LOW);
+    digitalWrite(red, LOW);
+    digitalWrite(green, HIGH);
+    tone(buzzer, 750, 500);
+    delay(500);
+    digitalWrite(green, LOW);
+    delay(50);
+  }
 }
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Led e Buzzer - sinal de alerta azul >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 void blueColorAlert() { //significa usuário admin autorizado ou conexão com o servidor.
-  short int i=0;
-  for (i=0;i<2;i++) {
-     digitalWrite(green,LOW);
-     digitalWrite(red,LOW);
-     digitalWrite(blue,HIGH);
-     tone(buzzer, 500, 300);
-     delay(25);
-     digitalWrite(blue,LOW);
-     delay(250);
+  short int i = 0;
+  for (i = 0; i < 2; i++) {
+    digitalWrite(green, LOW);
+    digitalWrite(red, LOW);
+    digitalWrite(blue, HIGH);
+    tone(buzzer, 500, 300);
+    delay(25);
+    digitalWrite(blue, LOW);
+    delay(250);
   }
 }
 
 
 
 
-void handleConnEvents(const char* msg, String name){ //trata a mensagem de conexão recebida do servidor
-    if(strcmp(msg, "fail") == 0){                    //Executado quando há falha de autenticação com o servidor
-          printMessage("ERRO", "ID: #0002");
-          redColorAlert();
-          Serial.println("Auth fail! Reconnecting...");
-          delay(5000);
-          AuthOk = false;
-          client.stop();
-        }
-        else if(strcmp(msg, "ok") == 0){            //Executado quando a autenticação ocorrer com sucesso
-          Serial.println("Auth OK! Ready to use...");
-          printMessage("BEM-VINDO(A) AO", name);
-          AuthOk = true;
-        }
+void handleConnEvents(const char* msg, String name) { //trata a mensagem de conexão recebida do servidor
+  if (strcmp(msg, "fail") == 0) {                  //Executado quando há falha de autenticação com o servidor
+    printMessage("ERRO", "ID: #0002");
+    redColorAlert();
+    Serial.println("Auth fail! Reconnecting...");
+    delay(5000);
+    AuthOk = false;
+    client.stop();
+  }
+  else if (strcmp(msg, "ok") == 0) {          //Executado quando a autenticação ocorrer com sucesso
+    Serial.println("Auth OK! Ready to use...");
+    printMessage("BEM-VINDO(A) AO", name);
+    AuthOk = true;
+  }
 }
 
 
-void readTCPStream(){ //lê o JSON enviado pelo servidor e armazena num array de char para ser tratado pela lib
-    char stream[128]; //também trata as mensagens recebidas direcionando para cada função específica
-    bool flag = false;
-    int j = 0;
-    if(client.available()){                         //Limpa o array da mensagem
-      for(int i=0; i<128; i++)
-        stream[i]=(char)0;
+void readTCPStream() { //lê o JSON enviado pelo servidor e armazena num array de char para ser tratado pela lib
+  char stream[128]; //também trata as mensagens recebidas direcionando para cada função específica
+  bool flag = false;
+  int j = 0;
+  if (client.available()) {                       //Limpa o array da mensagem
+    for (int i = 0; i < 128; i++)
+      stream[i] = (char)0;
+  }
+  while (client.available() && !flag) {           //Armazena no array o conteudo recebido do servidor
+    stream[j] = client.read();
+    char lastChar = stream[j];
+    j++;
+    if (client.available() == 0 || lastChar == 125) // 125 --> }
+      flag = !flag;
+  }
+  if (flag) {                                     //Executado quando a variável flag é verdadeira, ou seja, quando há conteúdo lido
+    Serial.println(stream);
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.parseObject(stream);
+    const char* type = root["type"];
+    if (strcmp(type, "conn") == 0) {              //Trata mensagens do tipo 'conn'
+      const char* auth = root["auth"];
+      const char* name = root["name"];
+      welcomeName = name;
+      handleConnEvents(auth, name);
     }
-    while(client.available() && !flag) {            //Armazena no array o conteudo recebido do servidor
-        stream[j] = client.read();
-        char lastChar = stream[j];
-        j++;
-        if(client.available()==0 || lastChar == 125) // 125 --> }
-            flag = !flag;
+    if (strcmp(type, "ping") == 0) {              //Trata os ping's enviados pelo servidor e responde
+      client.print("{\"type\":\"pong\"}");
     }
-    if(flag){                                       //Executado quando a variável flag é verdadeira, ou seja, quando há conteúdo lido
-      Serial.println(stream);
-      StaticJsonBuffer<200> jsonBuffer;
-      JsonObject& root = jsonBuffer.parseObject(stream);
-      const char* type = root["type"];
-      if(strcmp(type, "conn") == 0){                //Trata mensagens do tipo 'conn'
-        const char* auth = root["auth"];
+    if (strcmp(type, "auth") == 0) {              //Trata mensagens do tipo 'auth'
+      const char* auth = root["auth"];
+      if (strcmp(auth, "ok") == 0) {                  //Executado se a autenticação foi feita com sucesso
         const char* name = root["name"];
-        welcomeName = name;
-        handleConnEvents(auth, name);
-      }
-      if(strcmp(type, "ping") == 0){                //Trata os ping's enviados pelo servidor e responde
-        client.print("{\"type\":\"pong\"}");
-      }
-      if(strcmp(type, "auth") == 0){                //Trata mensagens do tipo 'auth'
-        const char* auth = root["auth"];
-        if(strcmp(auth, "ok") == 0){                    //Executado se a autenticação foi feita com sucesso
-          const char* name = root["name"];
-          int admin = root["admin"];
-          openMenu(name, admin);
-          waitingResponse = false;
-          fullCircle = true;
-        }
-        else if(strcmp(auth, "fail") == 0){             //Executado se a autenticação não foi feita com sucesso
-          Serial.println("AUTH FAIL");
-          printMessage("USUARIO NAO", "AUTORIZADO");
-          redColorAlert();
-          waitingResponse = false;
-          fullCircle = true;
-        }
-      }
-      if(strcmp(type, "register") == 0){                //Trata mensagens do tipo 'register'
-        int id = root["id"];
-        registerFinger(id);
+        int admin = root["admin"];
+        openMenu(name, admin);
         waitingResponse = false;
         fullCircle = true;
-        lcd.clear(); 
-        lcd.setCursor(0,0); 
-        lcd.print("SAIU. E AGORA?");
-
-
-        if(AuthOk){
-
-        if(waitingKeyboard){            //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
-
-        char tecla = Keypad.Key_State();   //partir de uma tecla específica
-        Serial.println(tecla);
-        if (tecla == 3){
-        tecla=leitura();
-        Serial.print("tecla: ");
-        Serial.println(tecla);
-        if(tecla == (char)49){        //Se for pressionada a tecla 1, o relé é acionado.
-            Serial.print("opendoor");
-            Serial.print(tecla);
-            openDoor();
-            fullCircle = true;
-        }
-        if(tecla == (char)50){
-          registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
-        }
-        waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
-        }
-        }
-        if(fullCircle && !waitingKeyboard && !waitingID){
-        lcd.clear(); // limpa o conteúdo no dysplay LCD
-        lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
-        lcd.print("BEM-VINDO(A) AO");
-        lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
-        lcd.print(welcomeName);
-        fullCircle = false;
-        }
-        if(!waitingResponse && !waitingKeyboard && !waitingID){     //Estado padrão da tranca, sempre executado enquanto a tranca estiver ociosa
-        int fingerID = readFinger();
-        if(fingerID){
-        sendFingerID(fingerID);
-        waitingResponse = true;
-        }
-        }
-        }
-
-
-
-
-  
-
-
-
-
-
-
-
-        
       }
-      flag = false;
+      else if (strcmp(auth, "fail") == 0) {           //Executado se a autenticação não foi feita com sucesso
+        Serial.println("AUTH FAIL");
+        printMessage("USUARIO NAO", "AUTORIZADO");
+        redColorAlert();
+        waitingResponse = false;
+        fullCircle = true;
+      }
     }
+    if (strcmp(type, "register") == 0) {              //Trata mensagens do tipo 'register'
+      int id = root["id"];
+      registerFinger(id);
+      waitingResponse = false;
+      fullCircle = true;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("SAIU. E AGORA?");
+
+
+      if (AuthOk) {
+
+        if (waitingKeyboard) {          //Função usada para o menu de administrador, ela recebe os comandos do teclado e executa uma função a
+
+          char tecla = leitura();   //partir de uma tecla específica
+          Serial.println(tecla);
+          if (tecla == 3) {
+            tecla = leitura();
+            Serial.print("tecla: ");
+            Serial.println(tecla);
+            if (tecla == (char)49) {      //Se for pressionada a tecla 1, o relé é acionado.
+              Serial.print("opendoor");
+              Serial.print(tecla);
+              openDoor();
+              fullCircle = true;
+            }
+            if (tecla == (char)50) {
+              registerFinger(0);        //Se for pressionada a tecla 2, a função de registro de usuário é chamada
+            }
+            waitingKeyboard = false;    //No final de cada ciclo acima, a variável de flag do teclado é setada como falsa.
+          }
+        }
+        if (fullCircle && !waitingKeyboard && !waitingID) {
+          lcd.clear(); // limpa o conteúdo no dysplay LCD
+          lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
+          lcd.print("BEM-VINDO(A) AO");
+          lcd.setCursor(0, 1); // seta para linha 1, ou seja, a linha de baixo
+          lcd.print(welcomeName);
+          fullCircle = false;
+        }
+        if (!waitingResponse && !waitingKeyboard && !waitingID) {   //Estado padrão da tranca, sempre executado enquanto a tranca estiver ociosa
+          int fingerID = readFinger();
+          if (fingerID) {
+            sendFingerID(fingerID);
+            waitingResponse = true;
+          }
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+    flag = false;
+  }
 }
 
-void sendFingerID(int id){              //Função que envia o ID lido pelo sensor
-  if(id){
+void sendFingerID(int id) {             //Função que envia o ID lido pelo sensor
+  if (id) {
     StaticJsonBuffer<64> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["type"] = "fingerid";
@@ -491,11 +497,11 @@ void sendFingerID(int id){              //Função que envia o ID lido pelo sens
   }
 }
 
-void openDoor(){
+void openDoor() {
   lcd.clear(); // limpa o conteúdo no dysplay LCD
-  lcd.setCursor(0,0); // seta o cursor para: (coluna = 0, linha = 0)
+  lcd.setCursor(0, 0); // seta o cursor para: (coluna = 0, linha = 0)
   lcd.print("BEM-VINDO(A)");
-  lcd.setCursor(0,1); // seta para linha 1, ou seja, a linha de baixo
+  lcd.setCursor(0, 1); // seta para linha 1, ou seja, a linha de baixo
   lcd.print(userName);
   digitalWrite(rele, HIGH);
   delay(500);
@@ -503,42 +509,43 @@ void openDoor(){
   greenColorAlert();
 }
 
-void openMenu(String name, int admin){   //Menu do administrador
+void openMenu(String name, int admin) {  //Menu do administrador
   userName = name;
-  if(!admin)
+  if (!admin)
     openDoor();
-  else{
+  else {
     printMessage("1- ENTRAR", "2- CADASTRAR");
     waitingKeyboard = true;
     blueColorAlert();
   }
 }
 
-void registerFinger(int id){            //Função que envia o pedido de ID ao servidor e chama a função de cadastro do sensor com o ID recebido
-  if(!waitingID){
+void registerFinger(int id) {           //Função que envia o pedido de ID ao servidor e chama a função de cadastro do sensor com o ID recebido
+  if (!waitingID) {
     client.write("{\"type\":\"addfinger\"}");
     waitingID = true;
   }
-  else{
+  else {
     waitingID = false;
     addFinger(id);
-    lcd.clear(); 
-    lcd.setCursor(0,0); 
-   // lcd.print("SAIU. E AGORA?");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    // lcd.print("SAIU. E AGORA?");
   }
 }
 
-
-
-
-
-char leitura(){
-  char keypress = Keypad.Getkey();  // put value of key pressed in variable 'keypress'
-  while ((Keypad.Key_State())){}  // Stay here while Key is held down
-  Serial.println("TODAS AS TECLAS:");
-  Serial.println(keypress);
-  if (keypress != (char)49 && keypress != (char)50){
-    leitura();
+char leitura() {
+  char keypress;
+  while (1) {
+    keypress = kpd.getKey();// put value of key pressed in variable 'keypress'
+    if (keypress != NO_KEY) {
+      if (keypress != (char)49 && keypress != (char)50)
+        leitura();
+      else
+        break;
+    }
   }
   return keypress;
 }
+
+
