@@ -2,15 +2,16 @@
     session_start();
     
 
-    if(isset($_SESSION['validacao'])){
+    if(isset($_SESSION['usuarioNiveisAcesso'])){
 
-        if ($_SESSION['validacao'] == "validado") {
+        if ($_SESSION['usuarioNiveisAcesso'] == "1") {
             header("Location: administrativo.php");
-        }
+        }elseif($_SESSION['usuarioNiveisAcesso'] == "0")
+        {   header("Location: colaborador.php");}
     }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,7 +21,7 @@
     <meta name="author" content="Jefferson Palheta">
     <link rel="icon" href="sf.png">
 
-    <title>Setserver</title>
+    <title>SetFinger</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -33,6 +34,7 @@
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
     <script src="js/ie-emulation-modes-warning.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -45,14 +47,14 @@
   <body>
 
     <div class="container">
-
+    <img src="logo.png" alt="..." class="img-responsive center-block" width="110px"/>
       <form class="form-signin" method="POST" action="valida.php">
-        <h2 class="form-signin-heading text-center">Setserver Admin</h2>
+        <h2 class="form-signin-heading text-center">SetFinger</h2>
         
         <label for="usuario" class="sr-only">Usuario</label>
-        <input type="text" name="usuario" class="form-control" placeholder="Email" required autofocus>
+        <input type="text" name="usuario" class="form-control" placeholder="Usuario" required autofocus>
         
-        <label for="senha" class="sr-only">Senha</label>
+        <label for="senha" class="sr-only">Senha</label></br>
         <input type="password" name="senha" class="form-control" placeholder="Senha" required>
         
         <button class="btn btn-lg btn-primary btn-block" type="submit">Entrar</button>

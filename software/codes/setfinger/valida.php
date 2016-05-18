@@ -6,10 +6,10 @@
 	if((isset($_POST['usuario'])) && (isset($_POST['senha']))){
 		$usuario = mysqli_real_escape_string($conn, $_POST['usuario']); //Escapar de caracteres especiais, como aspas, prevenindo SQL injection
 		$senha = mysqli_real_escape_string($conn, $_POST['senha']);
-		//$senha = md5($senha);
+		$senha = md5($senha);
 			
 		//Buscar na tabela usuario o usuário que corresponde com os dados digitado no formulário
-		$result_usuario = "SELECT * FROM login WHERE usuario = '$usuario' && senha = '$senha' LIMIT 1";
+		$result_usuario = "SELECT * FROM users WHERE user_name = '$usuario' && password = '$senha' LIMIT 1";
 		$resultado_usuario = mysqli_query($conn, $result_usuario);
 		$resultado = mysqli_fetch_assoc($resultado_usuario);
 		
@@ -17,10 +17,10 @@
 		if(isset($resultado)){
 			
 			$_SESSION['validacao']="validado";
-			//$_SESSION['usuarioId'] = $resultado['id'];
-			$_SESSION['usuarioNome'] = $resultado['nome'];
-			$_SESSION['usuarioNiveisAcesso'] = $resultado['nivel_acesso'];
-			//$_SESSION['usuarioEmail'] = $resultado['email'];
+			$_SESSION['usuarioId'] = $resultado['din'];
+			$_SESSION['usuarioNome'] = $resultado['name'];
+			$_SESSION['usuarioNiveisAcesso'] = $resultado['access_level'];
+			
 			
 
 

@@ -2,13 +2,21 @@
 session_start();
 include_once("seguranca.php");
 include_once("conexao.php");
+
+if(isset($_SESSION['usuarioNiveisAcesso'])){
+      if ($_SESSION['usuarioNiveisAcesso'] == "0") {
+          header("Location: colaborador.php");              
+      }
+  }
+
+
 ?>
 
 
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -45,34 +53,51 @@ include_once("conexao.php");
 
   <?php
       include_once("barra_menu_admin.php");
-
-      $selecao_usuarios= "SELECT * FROM history ORDER BY timestamp";
-      $consulta_usuarios= mysqli_query($conn, $selecao_usuarios);
-      $linhas=$consulta_usuarios->num_rows;
   ?>
 
     <div class="container theme-showcase" role="main">
 
       <div class="page-header text-center">
-        <h1>Registros de acesso de usuários</h1>
+        <?php echo "<h1>Registros de acesso de usuários em ".date('d/M/Y')."</h1>";
+        ?>
       </div>
 
         <div class="table-responsive"> <!--col-md-6-->
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>DIN</th>
+                <th>Nome</th>
                 <th>Data</th>
+                <th>Hora</th>                
               </tr>
             </thead>
             <tbody>
             <?php
-                while($linhas = $consulta_usuarios->fetch_array()){
-                  echo "<tr>";
-                  echo "<td>".$linhas['id']."</td>";
-                  echo "<td>".date('m/d/Y', $linhas['timestamp'])."</td>";
-                  echo "<tr>";
+
+            	$timestamp = strtotime("today");
+      			$selecao_usuarios= "SELECT * FROM history WHERE timestamp >= '$timestamp'";
+      			$consulta_usuarios= mysqli_query($conn, $selecao_usuarios);
+      			$resultado = mysqli_fetch_assoc($consulta_usuarios);
+
+      			if(isset($resultado)){
+      				$consulta_usuarios= mysqli_query($conn, $selecao_usuarios);	
+      				$linhas=$consulta_usuarios->num_rows;
+
+	                while($linhas = $consulta_usuarios->fetch_array()){
+	                  echo "<tr>";
+	                  echo "<td>".$linhas['din']."</td>";
+	                  echo "<td>".$linhas['name']."</td>";
+	                  echo "<td>".date('d/m/Y', $linhas['timestamp'])."</td>";
+	                  echo "<td>".date('H:i', $linhas['timestamp'])."</td>";
+	                  echo "<tr>";
+                	}
                 }
+				else{
+                      echo '<p class="text-center text-danger">';
+                      echo 'Não há registros de acesso para essa data';
+                      echo '</p>';
+                      }
             ?>
             </tbody>
           </table>
